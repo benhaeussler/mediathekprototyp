@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALP Mediathek</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Playfair+Display:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blau:#2A4194;--blau-75:#5F71AF;--blau-50:#949FC9;--blau-25:#C9CFE4;--blau-10:#ECECF4;
+  --gelb:#FFCF00;--gelb-75:#FFDB40;--gelb-50:#FFE67F;--gelb-25:#FFF3BF;--gelb-10:#FFFBE6;
+  --dunkelgrau:#3F3F3E;--mittelgrau:#A4A5A5;--hellgrau:#EEEFEF;
+  --hintergrund:#F9F9FA;--weiss:#ffffff;
+  --radius-s:6px;--radius-m:10px;--radius-l:14px;
+  --shadow-soft:0 1px 3px rgba(42,65,148,.06),0 1px 2px rgba(42,65,148,.04);
+  --shadow-hover:0 4px 12px rgba(42,65,148,.10),0 2px 4px rgba(42,65,148,.06);
+  --shadow-card:0 0 0 1px rgba(42,65,148,.06);
+  --transition:.2s cubic-bezier(.25,.46,.45,.94);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scrollbar-gutter:stable}
+body{font-family:'DM Sans',-apple-system,sans-serif;background:var(--weiss);color:var(--dunkelgrau);line-height:1.5;-webkit-font-smoothing:antialiased}
+
+.accent-bar{height:3px;background:linear-gradient(90deg,var(--gelb),var(--gelb-50) 50%,transparent)}
+header{background:var(--weiss);border-bottom:1px solid var(--hellgrau);position:sticky;top:0;z-index:100}
+.header-inner{max-width:1200px;margin:0 auto;padding:0 24px;height:56px;display:flex;align-items:center;gap:16px;position:relative}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--dunkelgrau);flex-shrink:0;cursor:pointer}
+.brand img{height:34px;width:auto}
+.brand-text{display:flex;flex-direction:column;line-height:1.15}
+.brand-name{font-family:'Playfair Display',serif;font-weight:700;font-size:17px;color:var(--blau);letter-spacing:-.3px}
+.brand-sub{font-size:10.5px;color:var(--mittelgrau);font-weight:500;letter-spacing:.5px;text-transform:uppercase}
+.nav-tabs{display:flex;gap:0;position:absolute;left:50%;transform:translateX(-50%)}
+.nav-tab{padding:0 18px;height:56px;display:flex;align-items:center;font-size:14px;font-weight:500;color:var(--mittelgrau);cursor:pointer;border-bottom:2.5px solid transparent;transition:var(--transition);white-space:nowrap}
+.nav-tab:hover{color:var(--dunkelgrau)}
+.nav-tab.active{color:var(--blau);border-bottom-color:var(--gelb)}
+
+.search-hero{background:var(--weiss);padding:30vh 24px 12vh;text-align:center;display:flex;flex-direction:column;align-items:center;transition:padding .35s ease}.search-hero.compact{padding:28px 24px 24px}
+.browse-hero{background:var(--weiss);padding:14vh 24px 5vh;text-align:center;transition:padding .35s ease}.browse-hero.compact{padding:28px 24px 24px}.browse-hero.hidden{display:none}
+.browse-hero h1{font-family:'Playfair Display',serif;font-size:38px;font-weight:700;color:var(--dunkelgrau);letter-spacing:-.5px;transition:font-size .35s ease}.browse-hero.compact h1{font-size:22px}
+.search-hero.hidden{display:none}
+.search-hero h1{font-family:'Playfair Display',serif;font-size:38px;font-weight:700;color:var(--dunkelgrau);margin-bottom:10px;letter-spacing:-0.5px;transition:font-size .35s ease}.search-hero.compact h1{font-size:22px}
+.search-hero p{font-size:15px;color:var(--mittelgrau);margin-bottom:24px;transition:opacity .25s ease,margin .25s ease}.search-hero.compact p{display:none}
+.search-box{max-width:560px;width:100%;position:relative}
+.search-box input{width:100%;height:52px;border:2px solid var(--hellgrau);border-radius:26px;padding:0 52px 0 24px;font-family:inherit;font-size:16.5px;color:var(--dunkelgrau);background:var(--weiss);outline:none;transition:var(--transition);box-shadow:0 2px 8px rgba(42,65,148,0.04)}
+.search-box input::placeholder{color:var(--mittelgrau)}
+.search-box input:focus{border-color:var(--blau-50);background:var(--weiss);box-shadow:0 0 0 4px rgba(42,65,148,.08)}
+.search-box .s-icon{position:absolute;right:18px;top:50%;transform:translateY(-50%);color:var(--blau-50);pointer-events:none}
+.search-box .s-clear{position:absolute;right:46px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--mittelgrau);cursor:pointer;font-size:20px;display:none;padding:2px;line-height:1}
+.search-box .s-clear.visible{display:block}
+.search-box .s-clear:hover{color:var(--dunkelgrau)}
+
+.filter-area{max-width:1200px;margin:0 auto;padding:14px 24px 0}
+.filter-area.hidden{display:none}
+.filter-chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding-bottom:10px}
+.filter-chips:empty{padding:0}
+.filter-chip{display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 12px;background:var(--gelb-25);border:1px solid var(--gelb-50);border-radius:14px;font-size:12.5px;font-weight:500;color:var(--dunkelgrau)}
+.filter-chip .remove{cursor:pointer;opacity:.5;font-size:15px;margin-left:2px;transition:var(--transition)}
+.filter-chip .remove:hover{opacity:1}
+.filter-chips .clear-all{background:none;border:none;font-family:inherit;font-size:12px;color:var(--blau-75);cursor:pointer;padding:4px 8px;border-radius:4px;transition:var(--transition)}
+.filter-chips .clear-all:hover{background:var(--blau-10);color:var(--blau)}
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding-bottom:14px;border-bottom:1px solid var(--hellgrau)}
+.filter-dropdown{position:relative}
+.filter-dropdown.hidden-filter{display:none}
+.filter-btn{display:inline-flex;align-items:center;gap:5px;height:32px;padding:0 14px;border:1.5px solid var(--hellgrau);border-radius:16px;background:var(--weiss);font-family:inherit;font-size:13px;color:var(--dunkelgrau);cursor:pointer;transition:var(--transition);white-space:nowrap}
+.filter-btn:hover{border-color:var(--blau-25);background:var(--blau-10)}
+.filter-btn.has-active{border-color:var(--blau);color:var(--blau);background:var(--blau-10)}
+.filter-btn .arrow{font-size:9px;opacity:.4;margin-left:1px}
+.filter-btn .count-badge{background:var(--blau);color:var(--weiss);font-size:10px;font-weight:600;border-radius:8px;padding:0 5px;min-width:16px;text-align:center;line-height:16px}
+.filter-menu{display:none;position:absolute;top:calc(100% + 6px);left:0;background:var(--weiss);border:1px solid var(--hellgrau);border-radius:var(--radius-m);box-shadow:0 8px 24px rgba(42,65,148,.12);padding:6px;z-index:50;min-width:190px;max-height:280px;overflow-y:auto}
+.filter-menu.open{display:block}
+.filter-menu.right{left:auto;right:0}
+.fmi{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--radius-s);font-size:13px;cursor:pointer;transition:var(--transition);user-select:none}
+.fmi:hover{background:var(--blau-10)}
+.fmi .ck{width:16px;height:16px;border-radius:4px;flex-shrink:0;border:1.5px solid var(--hellgrau);display:flex;align-items:center;justify-content:center;font-size:11px;transition:var(--transition)}
+.fmi.sel .ck{background:var(--blau);border-color:var(--blau);color:var(--weiss)}
+.result-count{margin-left:auto;font-size:13px;color:var(--mittelgrau);white-space:nowrap}
+
+.content{max-width:1200px;margin:0 auto;padding:18px 24px 48px}
+
+.browse-section{padding-top:32px;max-width:800px;margin:0 auto}
+.browse-section.hidden{display:none}
+.browse-results{padding-top:8px}.browse-results.hidden{display:none}
+.browse-group{margin-bottom:36px}
+.browse-group-title{font-size:15px;font-weight:600;color:var(--dunkelgrau);margin-bottom:12px;letter-spacing:0;padding-bottom:8px;background:linear-gradient(var(--gelb),var(--gelb)) 0 100% / 32px 2.5px no-repeat}
+
+
+.topic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.topic-card{background:var(--weiss);border:1px solid var(--hellgrau);border-radius:var(--radius-s);padding:11px 16px;cursor:pointer;transition:var(--transition)}
+.topic-card:hover{border-color:var(--blau-50);color:var(--blau)}
+
+.topic-name{font-size:14px;font-weight:500;line-height:1.3}
+
+.schwerpunkt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.schwerpunkt-card{background:var(--weiss);border:1px solid var(--hellgrau);border-radius:var(--radius-s);padding:11px 16px;cursor:pointer;transition:var(--transition)}
+.schwerpunkt-card:hover{border-color:var(--blau-50);color:var(--blau)}
+
+.schwerpunkt-label{font-size:14px;font-weight:500;line-height:1.3}
+
+
+.browse-crumb{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:13.5px}
+.crumb-link{color:var(--blau);cursor:pointer;font-weight:500}
+.crumb-link:hover{text-decoration:underline}
+.crumb-sep{color:var(--mittelgrau);font-size:11px}
+.crumb-current{color:var(--dunkelgrau);font-weight:600}
+
+.results-area-bg{background:var(--hintergrund);min-height:50vh}.results-section{}.results-section.hidden{display:none}
+.search-context{font-size:14px;color:var(--mittelgrau);margin-bottom:16px}
+.search-context strong{color:var(--dunkelgrau);font-weight:600}
+
+.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.media-card{background:var(--weiss);border-radius:var(--radius-m);box-shadow:var(--shadow-card);overflow:hidden;cursor:pointer;transition:var(--transition);display:flex;flex-direction:column}
+.media-card:hover{box-shadow:var(--shadow-hover);transform:translateY(-2px)}
+.card-thumb{position:relative;aspect-ratio:16/9;background:var(--blau-10);overflow:hidden}
+.card-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .3s ease}
+.media-card:hover .card-thumb img{transform:scale(1.03)}
+.card-badge{position:absolute;bottom:8px;left:8px;display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(42,65,148,.85);backdrop-filter:blur(4px);color:var(--weiss);font-size:11px;font-weight:500;border-radius:var(--radius-s)}
+.card-duration{position:absolute;bottom:8px;right:8px;padding:2px 6px;background:rgba(0,0,0,.7);color:var(--weiss);font-size:11px;font-weight:500;border-radius:4px;font-variant-numeric:tabular-nums}
+.card-body{padding:12px 14px 14px;flex:1;display:flex;flex-direction:column;gap:6px}
+.card-title{font-size:14px;font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-desc{font-size:12.5px;color:var(--mittelgrau);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-meta{margin-top:auto;padding-top:8px;display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--mittelgrau)}
+.license-badge{margin-left:auto;padding:1px 6px;background:var(--blau-10);border-radius:4px;font-size:10.5px;color:var(--blau-75);font-weight:500}
+
+.detail-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(42,65,148,.12);backdrop-filter:blur(2px);justify-content:center;padding:40px 24px;overflow-y:auto}
+.detail-overlay.open{display:flex}
+.detail-panel{background:var(--weiss);border-radius:var(--radius-l);max-width:800px;width:100%;box-shadow:0 20px 60px rgba(42,65,148,.15);animation:slideUp .25s ease-out;align-self:flex-start}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.detail-player{aspect-ratio:16/9;background:var(--dunkelgrau);border-radius:var(--radius-l) var(--radius-l) 0 0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.play-btn{width:64px;height:64px;border-radius:32px;background:var(--gelb);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--transition);box-shadow:0 4px 20px rgba(255,207,0,.4)}
+.play-btn:hover{transform:scale(1.08);box-shadow:0 6px 28px rgba(255,207,0,.5)}
+.play-btn svg{margin-left:3px}
+.detail-info{padding:24px 28px 28px}
+.detail-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;margin-bottom:4px}
+.detail-source{font-size:13px;color:var(--blau);font-weight:500;margin-bottom:14px}
+.detail-desc{font-size:14px;line-height:1.6;margin-bottom:18px}
+.detail-tags{display:flex;gap:6px;flex-wrap:wrap}
+.detail-tag{padding:4px 10px;background:var(--blau-10);border-radius:var(--radius-s);font-size:12px;color:var(--blau-75);font-weight:500}
+.detail-tag.license{background:var(--gelb-10);color:var(--dunkelgrau)}
+
+.empty-state{text-align:center;padding:60px 20px;color:var(--mittelgrau);grid-column:1/-1}
+.empty-state .empty-icon{font-size:40px;margin-bottom:12px}
+.empty-state h3{font-size:16px;color:var(--dunkelgrau);margin-bottom:4px}
+
+@media(max-width:768px){
+  .header-inner{padding:0 16px;gap:10px}.brand-text{display:none}
+  .search-hero{padding:24px 16px 28px}.search-hero h1{font-size:20px}.search-box input{height:44px;font-size:15px}
+  .filter-area{padding:12px 16px 0}.content{padding:14px 16px 32px}
+  .media-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+  .topic-grid,.schwerpunkt-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+}
+@media(max-width:480px){.media-grid{grid-template-columns:1fr}.topic-grid,.schwerpunkt-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="accent-bar"></div>
+<header>
+  <div class="header-inner">
+    <a class="brand" onclick="goHome()">
+      <img src="data:image/png;base64,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" alt="ALP Dillingen">
+      <div class="brand-text"><span class="brand-name">Mediathek</span><span class="brand-sub">ALP Dillingen</span></div>
+    </a>
+    <div class="nav-tabs">
+      <div class="nav-tab active" id="tabSearch" onclick="switchTab('search')">Suche</div>
+      <div class="nav-tab" id="tabBrowse" onclick="switchTab('browse')">Stöbern</div>
+    </div>
+  </div>
+</header>
+
+<div class="search-hero" id="searchHero">
+  <h1>Fortbildungsmedien finden.</h1>
+  <p>Durchsuchen Sie geprüfte Materialien der ALP Dillingen</p>
+  <div class="search-box">
+    <input type="text" placeholder="z. B. Künstliche Intelligenz, Leseförderung, Inklusion …" id="searchInput">
+    <button class="s-clear" id="searchClear" onclick="clearSearch()">×</button>
+    <div class="s-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+  </div>
+</div>
+
+<div class="browse-hero hidden" id="browseHero">
+  <h1>Themen erkunden.</h1>
+</div>
+
+<div class="filter-area hidden" id="filterArea">
+  <div class="filter-chips" id="filterChips"></div>
+  <div class="filter-row">
+    <div class="filter-dropdown" id="fd-thema">
+      <button class="filter-btn" onclick="toggleMenu('thema')">Themenbereich <span class="arrow">▾</span></button>
+      <div class="filter-menu" id="menu-thema"></div>
+    </div>
+    <div class="filter-dropdown" id="fd-typ">
+      <button class="filter-btn" onclick="toggleMenu('typ')">Medientyp <span class="arrow">▾</span></button>
+      <div class="filter-menu" id="menu-typ"></div>
+    </div>
+    <div class="filter-dropdown" id="fd-schulart">
+      <button class="filter-btn" onclick="toggleMenu('schulart')">Schulart <span class="arrow">▾</span></button>
+      <div class="filter-menu" id="menu-schulart"></div>
+    </div>
+    <div class="filter-dropdown" id="fd-lizenz">
+      <button class="filter-btn" onclick="toggleMenu('lizenz')">Lizenz <span class="arrow">▾</span></button>
+      <div class="filter-menu right" id="menu-lizenz"></div>
+    </div>
+    <span class="result-count" id="resultCount"></span>
+  </div>
+</div>
+
+<main class="content">
+  <div class="browse-section hidden" id="browseSection">
+    <div class="browse-group">
+      <div class="browse-group-title">In Fächern stöbern</div>
+      <div class="topic-grid" id="topicGrid"></div>
+    </div>
+    <div class="browse-group">
+      <div class="browse-group-title">Schwerpunktprogramm 2025 / 26</div>
+      <div class="schwerpunkt-grid" id="schwerpunktGrid"></div>
+    </div>
+    <div class="browse-group">
+      <div class="browse-group-title">Fokus-Themen</div>
+      <div class="schwerpunkt-grid" id="fokusGrid"></div>
+    </div>
+  </div>
+
+  <div class="browse-results hidden" id="browseResults">
+    <div class="browse-crumb">
+      <span class="crumb-link" onclick="switchTab('browse')">Themen</span>
+      <span class="crumb-sep">›</span>
+      <span class="crumb-current" id="crumbLabel"></span>
+    </div>
+    <div class="media-grid" id="browseGrid"></div>
+  </div>
+
+  <div class="results-section hidden" id="searchSection">
+    <div class="search-context" id="searchContext"></div>
+    <div class="media-grid" id="searchGrid"></div>
+  </div>
+</main>
+
+<div class="detail-overlay" id="detailOverlay" onclick="if(event.target===this)closeDetail()">
+  <div class="detail-panel">
+    <div class="detail-player">
+      <div class="play-btn"><svg width="28" height="28" viewBox="0 0 24 24" fill="var(--dunkelgrau)"><path d="M8 5v14l11-7z"/></svg></div>
+    </div>
+    <div class="detail-info">
+      <h2 class="detail-title" id="detailTitle"></h2>
+      <div class="detail-source" id="detailSource"></div>
+      <p class="detail-desc" id="detailDesc"></p>
+      <div class="detail-tags" id="detailTags"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══ DATA ═══
+const THEMEN = [
+  { id:"sprachen", name:"Sprachen",            icon:"🔤", eafCodes:["200","280","300","340","500","720"] },
+  { id:"mint",     name:"MINT",                icon:"🔬", eafCodes:["520","460","600","80","100"],       sub:"Mathe, Informatik, Physik, …" },
+  { id:"gesell",   name:"Gesellschaft & Politik", icon:"🌍", eafCodes:["380","320","700","780","620"],  sub:"Geschichte, Geographie, Politik, …" },
+  { id:"musisch",  name:"Musische Fächer",     icon:"🎨", eafCodes:["480","560"],                       sub:"Kunst, Musik" },
+  { id:"ethik",    name:"Ethik & Religion",     icon:"⚖️", eafCodes:["160","580","640"],                sub:"Ethik, Philosophie, Religion" },
+  { id:"sport",    name:"Sport",                icon:"⚽", eafCodes:["740"],                             sub:"Bewegung, Gesundheit" },
+];
+
+const SCHWERPUNKTE = [
+  { id:"ki",        label:"KI im Unterricht",                   keywords:["KI","Künstliche Intelligenz","ChatGPT","Machine Learning"], icon:"🤖", sub:"Chancen und Herausforderungen" },
+  { id:"lesen",     label:"Leseförderung",                      keywords:["Leseförderung","Lesekompetenz","Lesen"],                    icon:"📖", sub:"Basiskompetenzen stärken" },
+  { id:"dsdz",      label:"Digitale Schule der Zukunft",        keywords:["1:1","Tablet","Endgeräte","DSdZ","mobiles Lernen"],         icon:"🏫", sub:"1:1-Ausstattung, Endgeräte" },
+  { id:"bne",       label:"Bildung für nachhaltige Entwicklung", keywords:["BNE","Nachhaltigkeit","Klimaschutz","Umwelt"],             icon:"🌱", sub:"Umwelt, Klima, Nachhaltigkeit" },
+  { id:"inklusion", label:"Inklusion & Heterogenität",          keywords:["Inklusion","Heterogenität","Diversität","Förderung"],       icon:"🤝", sub:"Individuelle Förderung" },
+  { id:"demobild",  label:"Politische Bildung",                 keywords:["Demokratie","politische Bildung","Extremismus","Verfassungsviertelstunde"], icon:"🏛️", sub:"Demokratie, Prävention" },
+];
+
+const FOKUS = [
+  { id:"digbild",    label:"Digitale Bildung",        keywords:["digital","Medienbildung","DigCompEdu","Medienkompetenz","Tablet","Medienkonzept","Datenschutz"], icon:"💻" },
+  { id:"gesundheit", label:"Lehrkräftegesundheit",     keywords:["Gesundheit","Resilienz","Belastung","Burnout","Stressprävention","Coaching","Stimme"], icon:"💚" },
+  { id:"vvs",        label:"Verfassungsviertelstunde", keywords:["Verfassungsviertelstunde","Grundgesetz","Demokratie","politische Bildung","Verfassung"], icon:"🏛️" },
+];
+
+
+
+const ALLE_FAECHER = [
+  {eafCode:"200",name:"Deutsch"},{eafCode:"280",name:"Englisch"},{eafCode:"300",name:"Französisch"},
+  {eafCode:"500",name:"Latein"},{eafCode:"520",name:"Mathematik"},{eafCode:"460",name:"Informatik"},
+  {eafCode:"600",name:"Physik"},{eafCode:"80",name:"Chemie"},{eafCode:"100",name:"Biologie"},
+  {eafCode:"380",name:"Geschichte"},{eafCode:"320",name:"Geographie"},{eafCode:"700",name:"Sozialkunde"},
+  {eafCode:"480",name:"Kunst"},{eafCode:"560",name:"Musik"},{eafCode:"160",name:"Ethik"},
+  {eafCode:"640",name:"Religion"},{eafCode:"740",name:"Sport"},
+];
+
+const TYPE_LABELS={VIDEO_MP4:"Video",APPLICATION_PDF:"PDF",AUDIO_MPEG:"Audio",H5P:"H5P"};
+const TYPE_ICONS={VIDEO_MP4:"▶",APPLICATION_PDF:"◻",AUDIO_MPEG:"♪",H5P:"⬡"};
+
+// Filter definitions – thema options are DYNAMIC (set per mode)
+const STATIC_FILTERS = {
+  typ:      { label:"Medientyp", options: Object.entries(TYPE_LABELS).map(([v,l])=>({value:v,label:l})) },
+  schulart: { label:"Schulart",  options: ["Gymnasium","Realschule","Mittel- / Hauptschule","Grundschule","Berufsschule","Fachoberschule"].map(s=>({value:s,label:s==="Mittel- / Hauptschule"?"Mittelschule":s==="Fachoberschule"?"FOS/BOS":s})) },
+  lizenz:   { label:"Lizenz",    options: ["CC0","CC BY","CC BY-SA","CC BY-NC-SA","Copyright, freier Zugang"].map(l=>({value:l,label:l})) },
+};
+
+const MEDIA = [
+  // MINT: Informatik
+  { id:"S-001", title:"Datenbanken \u2013 Grundlagen relationaler Modelle", description:"Einf\u00fchrung in relationale Datenbanken. ER-Modelle, Normalisierung und SQL-Grundlagen.", dataType:"VIDEO_MP4", duration:"12:34", license:{name:"CC BY-SA"}, eafCode:["460"], schoolTypes:["Gymnasium","Realschule"], keywords:["Datenbank","SQL","ER-Modell"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=400&h=225&fit=crop" },
+  { id:"S-002", title:"Algorithmen \u2013 Arrays und Listen in Python", description:"Visuelle Erkl\u00e4rung von Arrays, verketteten Listen und deren Anwendung.", dataType:"VIDEO_MP4", duration:"08:45", license:{name:"CC BY"}, eafCode:["460"], schoolTypes:["Gymnasium"], keywords:["Algorithmus","Array","Liste","Python"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1515879218367-8466d910auj9?w=400&h=225&fit=crop" },
+  { id:"S-003", title:"Arbeitsblatt: Bin\u00e4rsystem und Hexadezimal", description:"\u00dcbungsaufgaben zur Umrechnung zwischen Zahlensystemen.", dataType:"APPLICATION_PDF", license:{name:"CC0"}, eafCode:["460","520"], schoolTypes:["Gymnasium","Realschule"], keywords:["Bin\u00e4rsystem","Hexadezimal","Zahlensystem"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=400&h=225&fit=crop" },
+  { id:"S-004", title:"Netzwerke verstehen \u2013 TCP/IP im Alltag", description:"Wie funktioniert das Internet? Vom Paket bis zum Browser.", dataType:"VIDEO_MP4", duration:"15:20", license:{name:"CC BY-SA"}, eafCode:["460"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["Netzwerk","TCP","IP","Internet"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=225&fit=crop" },
+  { id:"S-005", title:"Kryptographie \u2013 Caesar bis RSA", description:"Geschichte und Grundlagen der Verschl\u00fcsselung. Interaktive H5P-\u00dcbungen.", dataType:"H5P", license:{name:"CC BY-NC-SA"}, eafCode:["460"], schoolTypes:["Gymnasium"], keywords:["Kryptographie","Verschl\u00fcsselung","Caesar","RSA"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400&h=225&fit=crop" },
+  { id:"S-006", title:"Scratch: Erstes Spiel programmieren", description:"Schritt-f\u00fcr-Schritt zum Jump-and-Run-Spiel in Scratch 3.", dataType:"APPLICATION_PDF", license:{name:"CC BY"}, eafCode:["460"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["Scratch","Programmieren","Spiel"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=400&h=225&fit=crop" },
+  { id:"S-008", title:"Objektorientierung mit Java", description:"Klassen, Objekte, Vererbung \u2013 OOP-Grundkonzepte mit UML-Diagrammen.", dataType:"VIDEO_MP4", duration:"18:02", license:{name:"CC BY"}, eafCode:["460"], schoolTypes:["Gymnasium"], keywords:["Java","OOP","Klasse","Vererbung"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=225&fit=crop" },
+  { id:"S-013", title:"Python-Grundkurs f\u00fcr Einsteiger", description:"Variablen, Schleifen, Funktionen \u2013 die Basics in 10 Lektionen.", dataType:"VIDEO_MP4", duration:"45:00", license:{name:"CC BY-SA"}, eafCode:["460"], schoolTypes:["Gymnasium","Fachoberschule"], keywords:["Python","Programmierung","Anf\u00e4nger"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=400&h=225&fit=crop" },
+  // MINT: Mathematik
+  { id:"S-009", title:"Quadratische Funktionen \u2013 Scheitelpunktform", description:"Herleitung und Anwendung mit GeoGebra-Visualisierungen.", dataType:"VIDEO_MP4", duration:"11:30", license:{name:"CC BY-SA"}, eafCode:["520"], schoolTypes:["Gymnasium","Realschule"], keywords:["Funktion","Scheitelpunkt","Parabel","Mathematik"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1509228468518-180dd4864904?w=400&h=225&fit=crop" },
+  { id:"S-010", title:"Wahrscheinlichkeitsrechnung \u2013 Baumdiagramme", description:"Mehrstufige Zufallsexperimente l\u00f6sen. Arbeitsblatt mit L\u00f6sungen.", dataType:"APPLICATION_PDF", license:{name:"CC0"}, eafCode:["520"], schoolTypes:["Gymnasium","Realschule"], keywords:["Wahrscheinlichkeit","Baumdiagramm","Stochastik"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1596495578065-6e0763fa1178?w=400&h=225&fit=crop" },
+  { id:"S-030", title:"Differentialrechnung \u2013 Einf\u00fchrung", description:"Ableitung, Steigung und Tangente anschaulich mit dynamischen Grafiken.", dataType:"VIDEO_MP4", duration:"22:10", license:{name:"CC BY-SA"}, eafCode:["520"], schoolTypes:["Gymnasium","Fachoberschule"], keywords:["Differentialrechnung","Ableitung","Analysis","Mathematik"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1509228468518-180dd4864904?w=400&h=225&fit=crop" },
+  // MINT: Physik, Chemie, Bio
+  { id:"S-014", title:"Der einfache Stromkreis", description:"Simulation und Erkl\u00e4rung elektrischer Schaltungen.", dataType:"H5P", license:{name:"CC BY"}, eafCode:["600"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["Strom","Schaltung","Physik","Elektrizit\u00e4t"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1518770660439-4636190af475?w=400&h=225&fit=crop" },
+  { id:"S-031", title:"Mechanik \u2013 Newtonsche Gesetze", description:"Die drei Newtonschen Gesetze mit Alltagsbeispielen und Experimenten.", dataType:"VIDEO_MP4", duration:"14:50", license:{name:"CC BY-SA"}, eafCode:["600"], schoolTypes:["Gymnasium","Realschule"], keywords:["Mechanik","Newton","Kraft","Physik"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1636466497217-26a8cbeaf0aa?w=400&h=225&fit=crop" },
+  { id:"S-032", title:"Periodensystem interaktiv", description:"Interaktive \u00dcbungen zu Elementen, Gruppen und Ordnungszahlen.", dataType:"H5P", license:{name:"CC BY"}, eafCode:["80"], schoolTypes:["Gymnasium","Realschule"], keywords:["Periodensystem","Elemente","Chemie"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=400&h=225&fit=crop" },
+  { id:"S-033", title:"Genetik \u2013 Von der DNA zum Protein", description:"Proteinbiosynthese anschaulich erkl\u00e4rt mit Animationen.", dataType:"VIDEO_MP4", duration:"16:20", license:{name:"CC BY-SA"}, eafCode:["100"], schoolTypes:["Gymnasium"], keywords:["Genetik","DNA","Protein","Biologie"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1530026405186-ed1f139313f8?w=400&h=225&fit=crop" },
+  // Sprachen
+  { id:"S-011", title:"Leseförderung in der Sekundarstufe", description:"Methoden und Materialien zur Stärkung der Lesekompetenz.", dataType:"APPLICATION_PDF", license:{name:"CC BY"}, eafCode:["200"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["Leseförderung","Lesekompetenz","Lesen","Deutsch"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1474932430478-367dbb6832c1?w=400&h=225&fit=crop" },
+  { id:"S-012", title:"Simple Past vs. Present Perfect", description:"Interaktive \u00dcbungen zur Unterscheidung englischer Vergangenheitsformen.", dataType:"H5P", license:{name:"CC BY-SA"}, eafCode:["280"], schoolTypes:["Gymnasium","Realschule"], keywords:["Englisch","Grammatik","Tenses"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1543109740-4bdb38fda756?w=400&h=225&fit=crop" },
+  { id:"S-034", title:"Er\u00f6rterung schreiben \u2013 Schritt f\u00fcr Schritt", description:"Aufbau, Argumentationsstruktur und sprachliche Mittel der Er\u00f6rterung.", dataType:"VIDEO_MP4", duration:"13:40", license:{name:"CC BY"}, eafCode:["200"], schoolTypes:["Gymnasium","Realschule"], keywords:["Er\u00f6rterung","Argumentation","Aufsatz","Deutsch"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1455390582262-044cdead277a?w=400&h=225&fit=crop" },
+  { id:"S-035", title:"Lesestrategien f\u00fcr schwache Leser", description:"Scaffolding-Techniken und differenzierte Leseaufgaben f\u00fcr die Praxis.", dataType:"APPLICATION_PDF", license:{name:"CC BY-SA"}, eafCode:["200"], schoolTypes:["Mittel- / Hauptschule","Realschule","Grundschule"], keywords:["Lesef\u00f6rderung","Lesekompetenz","Lesen","Scaffolding","Differenzierung"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&h=225&fit=crop" },
+  { id:"S-036", title:"Spoken English \u2013 Listening Comprehension", description:"H\u00f6rverst\u00e4ndnis\u00fcbungen mit authentischen Audiobeispielen.", dataType:"AUDIO_MPEG", duration:"18:30", license:{name:"CC BY"}, eafCode:["280"], schoolTypes:["Gymnasium","Realschule"], keywords:["Englisch","Listening","H\u00f6rverstehen"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1543109740-4bdb38fda756?w=400&h=225&fit=crop" },
+  { id:"S-037", title:"Fran\u00e7ais: Pass\u00e9 compos\u00e9 vs. Imparfait", description:"Regeln, Signalw\u00f6rter und interaktive \u00dcbungen.", dataType:"H5P", license:{name:"CC BY-SA"}, eafCode:["300"], schoolTypes:["Gymnasium","Realschule"], keywords:["Franz\u00f6sisch","Grammatik","Pass\u00e9 compos\u00e9"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1549877452-9c387954fbc2?w=400&h=225&fit=crop" },
+  // Gesellschaft & Politik
+  { id:"S-038", title:"Weimarer Republik \u2013 Scheitern einer Demokratie", description:"Ursachen, Verlauf und Lehren f\u00fcr die Gegenwart.", dataType:"VIDEO_MP4", duration:"19:45", license:{name:"CC BY-SA"}, eafCode:["380"], schoolTypes:["Gymnasium","Realschule"], keywords:["Weimarer Republik","Geschichte","Demokratie"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1461360370896-922624d12a74?w=400&h=225&fit=crop" },
+  { id:"S-039", title:"Klimazonen der Erde", description:"\u00dcbersicht der Klimazonen mit interaktiver Weltkarte.", dataType:"H5P", license:{name:"CC BY"}, eafCode:["320"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["Klimazonen","Geographie","Klima","Erde"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=225&fit=crop" },
+  { id:"S-019", title:"Demokratiebildung im digitalen Raum", description:"Politische Medienkompetenz und Umgang mit Desinformation.", dataType:"VIDEO_MP4", duration:"14:30", license:{name:"CC BY-SA"}, eafCode:["700","380"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["Demokratie","politische Bildung","Medienkompetenz","Desinformation","Extremismus"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=400&h=225&fit=crop" },
+  // Musische F\u00e4cher
+  { id:"S-040", title:"Farbenlehre \u2013 Kontraste und Wirkung", description:"Farbkreis, Komplement\u00e4rkontraste und ihre Anwendung im Kunstunterricht.", dataType:"VIDEO_MP4", duration:"10:15", license:{name:"CC BY"}, eafCode:["480"], schoolTypes:["Gymnasium","Realschule"], keywords:["Farbe","Kontrast","Kunst","Farbenlehre"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400&h=225&fit=crop" },
+  { id:"S-041", title:"Musiktheorie: Intervalle h\u00f6ren", description:"Geh\u00f6rbildung mit Audio-\u00dcbungen zu Intervallen.", dataType:"H5P", license:{name:"CC BY-SA"}, eafCode:["560"], schoolTypes:["Gymnasium","Realschule"], keywords:["Musik","Intervall","Geh\u00f6rbildung"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=400&h=225&fit=crop" },
+  // Ethik & Religion
+  { id:"S-042", title:"Ethisches Argumentieren lernen", description:"Dilemmata diskutieren: Methoden f\u00fcr den Ethikunterricht.", dataType:"APPLICATION_PDF", license:{name:"CC BY"}, eafCode:["160"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["Ethik","Dilemma","Argumentieren","Werte"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=400&h=225&fit=crop" },
+  { id:"S-043", title:"Weltreligionen im Vergleich", description:"Interaktiver \u00dcberblick: Christentum, Islam, Judentum, Buddhismus, Hinduismus.", dataType:"H5P", license:{name:"CC BY-SA"}, eafCode:["640"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["Religion","Weltreligionen","interreligi\u00f6s"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1544027993-37dbfe43562a?w=400&h=225&fit=crop" },
+  // Sport
+  { id:"S-044", title:"Bewegungsanalyse im Sportunterricht", description:"Videogest\u00fctzte Analyse von Bewegungsabl\u00e4ufen mit Tablet.", dataType:"VIDEO_MP4", duration:"12:00", license:{name:"CC BY"}, eafCode:["740"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["Sport","Bewegung","Analyse","Tablet"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1461896836934-bd45ba0c1c67?w=400&h=225&fit=crop" },
+  { id:"S-045", title:"Erste Hilfe im Schulsport", description:"Notfallma\u00dfnahmen bei typischen Sportverletzungen.", dataType:"APPLICATION_PDF", license:{name:"CC0"}, eafCode:["740"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule","Grundschule"], keywords:["Sport","Erste Hilfe","Sicherheit","Verletzung"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1461896836934-bd45ba0c1c67?w=400&h=225&fit=crop" },
+
+  // ═══ SCHWERPUNKT: KI im Unterricht ═══
+  { id:"S-007", title:"KI im Klassenzimmer \u2013 Ein Podcast", description:"Lehrkr\u00e4fte diskutieren den Einsatz von KI-Tools. Chancen, Grenzen, Praxisbeispiele.", dataType:"AUDIO_MPEG", duration:"24:10", license:{name:"CC BY-SA"}, eafCode:["460"], schoolTypes:["Gymnasium","Realschule","Berufsschule"], keywords:["KI","K\u00fcnstliche Intelligenz","Podcast","ChatGPT"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=225&fit=crop" },
+  { id:"S-015", title:"KI-gest\u00fctztes Feedback im Unterricht", description:"Wie KI-Tools f\u00fcr formatives Assessment eingesetzt werden k\u00f6nnen.", dataType:"VIDEO_MP4", duration:"16:45", license:{name:"CC BY-SA"}, eafCode:["460"], schoolTypes:["Gymnasium","Realschule","Berufsschule"], keywords:["KI","K\u00fcnstliche Intelligenz","Feedback","Assessment","Machine Learning"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=400&h=225&fit=crop" },
+  { id:"S-050", title:"ChatGPT im Deutschunterricht", description:"Praxisszenarien: Schreibassistenz, Textanalyse und kritische Reflexion von KI-Texten.", dataType:"VIDEO_MP4", duration:"21:30", license:{name:"CC BY-SA"}, eafCode:["200","460"], schoolTypes:["Gymnasium","Realschule"], keywords:["KI","K\u00fcnstliche Intelligenz","ChatGPT","Deutsch","Schreiben"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1684487747720-1ba29cda82c8?w=400&h=225&fit=crop" },
+  { id:"S-051", title:"Prompt Engineering f\u00fcr Lehrkr\u00e4fte", description:"Grundlagen der Prompt-Gestaltung f\u00fcr den effektiven Einsatz von KI-Sprachmodellen.", dataType:"APPLICATION_PDF", license:{name:"CC BY"}, eafCode:["460"], schoolTypes:["Gymnasium","Realschule","Berufsschule","Mittel- / Hauptschule"], keywords:["KI","K\u00fcnstliche Intelligenz","ChatGPT","Prompt","Machine Learning"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=225&fit=crop" },
+  { id:"S-052", title:"KI und Pr\u00fcfungskultur", description:"Wie ver\u00e4ndert KI Leistungserhebung? Neue Aufgabenformate und Bewertungskriterien.", dataType:"VIDEO_MP4", duration:"18:20", license:{name:"CC BY-SA"}, eafCode:["460"], schoolTypes:["Gymnasium","Realschule","Berufsschule","Fachoberschule"], keywords:["KI","K\u00fcnstliche Intelligenz","Pr\u00fcfung","Assessment","Leistungserhebung"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=400&h=225&fit=crop" },
+  { id:"S-053", title:"Machine Learning entdecken \u2013 ohne Code", description:"Interaktive \u00dcbungen: Teachable Machine, Quick Draw und Co. im Unterricht.", dataType:"H5P", license:{name:"CC BY"}, eafCode:["460"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["KI","Machine Learning","K\u00fcnstliche Intelligenz","Teachable Machine"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1555255707-c07966088b7b?w=400&h=225&fit=crop" },
+  { id:"S-054", title:"Deepfakes erkennen und einordnen", description:"Medienkompetenz: Wie KI-generierte Inhalte erkannt und bewertet werden.", dataType:"VIDEO_MP4", duration:"13:10", license:{name:"CC BY-SA"}, eafCode:["460","700"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["KI","K\u00fcnstliche Intelligenz","Deepfake","Medienkompetenz"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=225&fit=crop" },
+  { id:"S-055", title:"KI-Tools f\u00fcr die Unterrichtsvorbereitung", description:"Arbeitsbl\u00e4tter, Quizze und Differenzierung automatisiert erstellen.", dataType:"APPLICATION_PDF", license:{name:"CC BY-SA"}, eafCode:["460"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule","Berufsschule"], keywords:["KI","K\u00fcnstliche Intelligenz","Unterrichtsvorbereitung","ChatGPT","Tools"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1684487747720-1ba29cda82c8?w=400&h=225&fit=crop" },
+
+  // ═══ SCHWERPUNKT: Lesef\u00f6rderung ═══
+  { id:"S-060", title:"Lautleseverfahren in der Grundschule", description:"Tandemlesen, Lautlese-Protokolle und Fluency-Training praktisch umgesetzt.", dataType:"VIDEO_MP4", duration:"14:20", license:{name:"CC BY"}, eafCode:["200"], schoolTypes:["Grundschule","Mittel- / Hauptschule"], keywords:["Lesef\u00f6rderung","Lesekompetenz","Lesen","Lautlesen","Fluency"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=225&fit=crop" },
+  { id:"S-061", title:"Vielleseverfahren \u2013 Lesekultur aufbauen", description:"Freie Lesezeiten, Lesepass und Buchvorstellungen als Schulkonzept.", dataType:"APPLICATION_PDF", license:{name:"CC BY-SA"}, eafCode:["200"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["Lesef\u00f6rderung","Lesekompetenz","Lesen","Lesekultur","Viellesen"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=225&fit=crop" },
+  { id:"S-062", title:"Diagnose der Lesekompetenz", description:"Testverfahren zur Ermittlung von Lesest\u00e4rken und -schw\u00e4chen.", dataType:"APPLICATION_PDF", license:{name:"CC0"}, eafCode:["200"], schoolTypes:["Grundschule","Mittel- / Hauptschule","Realschule","Gymnasium"], keywords:["Lesef\u00f6rderung","Lesekompetenz","Lesen","Diagnose","Lese-Rechtschreib-St\u00f6rung"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=400&h=225&fit=crop" },
+  { id:"S-063", title:"Digitale Lesef\u00f6rderung mit Apps", description:"\u00dcbersicht geeigneter Apps und digitaler Tools zur Lesef\u00f6rderung.", dataType:"VIDEO_MP4", duration:"11:50", license:{name:"CC BY"}, eafCode:["200"], schoolTypes:["Grundschule","Mittel- / Hauptschule","Realschule"], keywords:["Lesef\u00f6rderung","Lesekompetenz","Lesen","digital","Apps","Tablet"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1544256718-3bcf237f3974?w=400&h=225&fit=crop" },
+  { id:"S-064", title:"Lesen in allen F\u00e4chern", description:"Lesestrategien fach\u00fcbergreifend verankern: Sachtext, Aufgabe, Diagramm.", dataType:"AUDIO_MPEG", duration:"20:00", license:{name:"CC BY-SA"}, eafCode:["200"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["Lesef\u00f6rderung","Lesekompetenz","Lesen","Sachtext","fach\u00fcbergreifend"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1474932430478-367dbb6832c1?w=400&h=225&fit=crop" },
+
+  // ═══ SCHWERPUNKT: Digitale Schule der Zukunft ═══
+  { id:"S-016", title:"Tablets im Unterricht \u2013 Praxisleitfaden", description:"Didaktische Szenarien f\u00fcr die 1:1-Ausstattung.", dataType:"APPLICATION_PDF", license:{name:"CC BY"}, eafCode:["460"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["Tablet","1:1","Endger\u00e4te","DSdZ","mobiles Lernen","Digitale Schule der Zukunft"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1544256718-3bcf237f3974?w=400&h=225&fit=crop" },
+  { id:"S-070", title:"Classroom Management mit Tablets", description:"Regeln, Routinen und technische L\u00f6sungen f\u00fcr den 1:1-Alltag.", dataType:"VIDEO_MP4", duration:"15:40", license:{name:"CC BY-SA"}, eafCode:["460"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["Tablet","1:1","DSdZ","Classroom Management","Endger\u00e4te","mobiles Lernen"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1588072432836-e10032774350?w=400&h=225&fit=crop" },
+  { id:"S-071", title:"Kollaboratives Arbeiten mit Sch\u00fclerger\u00e4ten", description:"Gemeinsam Dokumente erstellen, Ergebnisse teilen, Feedback geben.", dataType:"H5P", license:{name:"CC BY"}, eafCode:["460"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["Tablet","1:1","Kollaboration","DSdZ","Endger\u00e4te","mobiles Lernen"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=225&fit=crop" },
+  { id:"S-072", title:"Erkl\u00e4rvideo-Produktion im Unterricht", description:"Sch\u00fcler erstellen Erkl\u00e4rvideos mit dem Tablet. Workflow und Bewertung.", dataType:"VIDEO_MP4", duration:"19:10", license:{name:"CC BY-SA"}, eafCode:["460"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["Tablet","1:1","Erkl\u00e4rvideo","DSdZ","mobiles Lernen","Endger\u00e4te"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?w=400&h=225&fit=crop" },
+  { id:"S-073", title:"Digitale Hefte und Portfolios", description:"GoodNotes, OneNote & Co.: Digitale Mitschriften systematisch einsetzen.", dataType:"APPLICATION_PDF", license:{name:"CC BY"}, eafCode:["460"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["Tablet","1:1","DSdZ","Heft","Portfolio","Endger\u00e4te","mobiles Lernen"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1588072432836-e10032774350?w=400&h=225&fit=crop" },
+
+  // ═══ SCHWERPUNKT: BNE ═══
+  { id:"S-018", title:"BNE: Klimawandel verstehen", description:"Unterrichtseinheit zu Ursachen und Folgen des Klimawandels.", dataType:"H5P", license:{name:"CC BY-SA"}, eafCode:["320","100"], schoolTypes:["Gymnasium","Realschule"], keywords:["BNE","Nachhaltigkeit","Klimaschutz","Umwelt","Klimawandel"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=400&h=225&fit=crop" },
+  { id:"S-080", title:"Fairer Handel im Unterricht", description:"Materialien zu globalem Handel, Lieferketten und Konsumverhalten.", dataType:"APPLICATION_PDF", license:{name:"CC BY"}, eafCode:["320","700"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["BNE","Nachhaltigkeit","Fairer Handel","Globalisierung","Umwelt"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?w=400&h=225&fit=crop" },
+  { id:"S-081", title:"Biodiversit\u00e4t \u2013 Artenvielfalt sch\u00fctzen", description:"Warum Biodiversit\u00e4t wichtig ist und was jeder Einzelne tun kann.", dataType:"VIDEO_MP4", duration:"16:30", license:{name:"CC BY-SA"}, eafCode:["100"], schoolTypes:["Gymnasium","Realschule"], keywords:["BNE","Nachhaltigkeit","Biodiversit\u00e4t","Umwelt","Artenschutz"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=400&h=225&fit=crop" },
+  { id:"S-082", title:"Schulprojekt: Nachhaltige Schule", description:"Praxisbeispiele f\u00fcr BNE als Schulentwicklungsprozess.", dataType:"APPLICATION_PDF", license:{name:"CC0"}, eafCode:["320"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule","Grundschule"], keywords:["BNE","Nachhaltigkeit","Schulentwicklung","Klimaschutz","Umwelt"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?w=400&h=225&fit=crop" },
+  { id:"S-083", title:"Virtuelles Wasser \u2013 versteckter Verbrauch", description:"Interaktive Einheit zum Wasser-Fu\u00dfabdruck allt\u00e4glicher Produkte.", dataType:"H5P", license:{name:"CC BY"}, eafCode:["320","80"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["BNE","Nachhaltigkeit","Wasser","Umwelt","Ressourcen"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=400&h=225&fit=crop" },
+
+  // ═══ SCHWERPUNKT: Inklusion & Heterogenität ═══
+  { id:"S-017", title:"Inklusion im Fachunterricht", description:"Differenzierungsstrategien und Materialien f\u00fcr inklusiven Unterricht.", dataType:"VIDEO_MP4", duration:"20:15", license:{name:"CC BY-SA"}, eafCode:["200","520"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule","Grundschule"], keywords:["Inklusion","Heterogenit\u00e4t","Diversit\u00e4t","F\u00f6rderung","Differenzierung"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400&h=225&fit=crop" },
+  { id:"S-090", title:"Universal Design for Learning (UDL)", description:"Drei Prinzipien des UDL f\u00fcr barrierefreien Unterricht.", dataType:"APPLICATION_PDF", license:{name:"CC BY"}, eafCode:["200"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule","Grundschule"], keywords:["Inklusion","Heterogenit\u00e4t","UDL","Barrierefreiheit","F\u00f6rderung","Diversit\u00e4t"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400&h=225&fit=crop" },
+  { id:"S-091", title:"Nachteilsausgleich in der Praxis", description:"Rechtliche Grundlagen und Umsetzungsm\u00f6glichkeiten im Schulalltag.", dataType:"VIDEO_MP4", duration:"17:40", license:{name:"CC BY-SA"}, eafCode:["200"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule","Grundschule"], keywords:["Inklusion","Nachteilsausgleich","F\u00f6rderung","Heterogenit\u00e4t"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400&h=225&fit=crop" },
+  { id:"S-092", title:"Sprachsensibel unterrichten in allen F\u00e4chern", description:"Scaffolding und sprachliche Hilfen f\u00fcr Lernende mit DaZ-Hintergrund.", dataType:"APPLICATION_PDF", license:{name:"CC BY-SA"}, eafCode:["200"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule","Grundschule"], keywords:["Inklusion","Heterogenit\u00e4t","DaZ","Sprachsensibel","Scaffolding","F\u00f6rderung","Diversit\u00e4t"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=225&fit=crop" },
+  { id:"S-093", title:"Hochbegabung erkennen und f\u00f6rdern", description:"Diagnostik, Enrichment und Akzeleration in der Schulpraxis.", dataType:"VIDEO_MP4", duration:"15:30", license:{name:"CC BY"}, eafCode:["200"], schoolTypes:["Gymnasium","Realschule","Grundschule"], keywords:["Inklusion","Heterogenit\u00e4t","Hochbegabung","F\u00f6rderung","Begabung","Diversit\u00e4t"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1577896851231-70ef18881754?w=400&h=225&fit=crop" },
+
+  // ═══ SCHWERPUNKT: Politische Bildung ═══
+  { id:"S-100", title:"Fake News erkennen und bek\u00e4mpfen", description:"Methoden zur Quellenpr\u00fcfung und Faktenchecks im Unterricht.", dataType:"H5P", license:{name:"CC BY"}, eafCode:["700"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["Demokratie","politische Bildung","Fake News","Medienkompetenz","Desinformation"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=400&h=225&fit=crop" },
+  { id:"S-101", title:"Verfassungsviertelstunde \u2013 Materialsammlung", description:"Fertige Impulse und Materialien f\u00fcr die w\u00f6chentliche Verfassungsviertelstunde.", dataType:"APPLICATION_PDF", license:{name:"CC0"}, eafCode:["700","380"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule","Grundschule"], keywords:["Demokratie","politische Bildung","Verfassungsviertelstunde","Grundgesetz"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=400&h=225&fit=crop" },
+  { id:"S-102", title:"Extremismuspr\u00e4vention an Schulen", description:"Erkennen, Handeln, Vorbeugen \u2013 ein Leitfaden f\u00fcr Lehrkr\u00e4fte.", dataType:"VIDEO_MP4", duration:"22:00", license:{name:"CC BY-SA"}, eafCode:["700"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule","Berufsschule"], keywords:["Extremismus","politische Bildung","Pr\u00e4vention","Demokratie","Radikalisierung"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=400&h=225&fit=crop" },
+  { id:"S-103", title:"Planspiel: Demokratie erleben", description:"Simulation eines Gesetzgebungsverfahrens als Planspiel.", dataType:"APPLICATION_PDF", license:{name:"CC BY"}, eafCode:["700","380"], schoolTypes:["Gymnasium","Realschule"], keywords:["Demokratie","politische Bildung","Planspiel","Gesetzgebung"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1555848962-6e79363ec58f?w=400&h=225&fit=crop" },
+  { id:"S-104", title:"Antisemitismus erkennen und begegnen", description:"Erscheinungsformen, Pr\u00e4vention und Unterrichtsmaterialien.", dataType:"VIDEO_MP4", duration:"18:45", license:{name:"CC BY-SA"}, eafCode:["700","380"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["Demokratie","politische Bildung","Antisemitismus","Extremismus","Pr\u00e4vention"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1555848962-6e79363ec58f?w=400&h=225&fit=crop" },
+
+  // ═══ FOKUS: Digitale Bildung ═══
+  { id:"S-110", title:"DigCompEdu Bavaria – Kompetenzrahmen", description:"Der digitale Kompetenzrahmen für Lehrkräfte in Bayern erklärt.", dataType:"APPLICATION_PDF", license:{name:"CC BY"}, eafCode:["460"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule","Grundschule","Berufsschule"], keywords:["digital","DigCompEdu","Medienkompetenz","Medienbildung"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1588072432836-e10032774350?w=400&h=225&fit=crop" },
+  { id:"S-111", title:"Medienkonzept für die Schule erstellen", description:"Schritt-für-Schritt-Anleitung zum schulischen Medienkonzept.", dataType:"VIDEO_MP4", duration:"17:20", license:{name:"CC BY-SA"}, eafCode:["460"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule","Grundschule"], keywords:["digital","Medienkonzept","Medienbildung","Schulentwicklung","Medienkompetenz"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1588072432836-e10032774350?w=400&h=225&fit=crop" },
+  { id:"S-112", title:"Datenschutz im Schulalltag", description:"DSGVO-konformes Arbeiten mit digitalen Tools. Praxistipps.", dataType:"APPLICATION_PDF", license:{name:"CC0"}, eafCode:["460"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule","Grundschule","Berufsschule"], keywords:["digital","Datenschutz","DSGVO","Medienbildung"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1563986768609-322da13575f2?w=400&h=225&fit=crop" },
+
+  // ═══ FOKUS: BayernCloud Schule ═══
+  { id:"S-120", title:"ByCS – Überblick und Einstieg", description:"Die BayernCloud Schule: Alle Tools und Dienste im Überblick.", dataType:"VIDEO_MP4", duration:"12:00", license:{name:"CC BY"}, eafCode:["460"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule","Grundschule","Berufsschule"], keywords:["ByCS","BayernCloud","mebis","Lernplattform","digital"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1544256718-3bcf237f3974?w=400&h=225&fit=crop" },
+  { id:"S-121", title:"mebis Lernplattform effektiv nutzen", description:"Kursgestaltung, Aktivitäten und Bewertung auf der mebis-Plattform.", dataType:"H5P", license:{name:"CC BY-SA"}, eafCode:["460"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule","Grundschule"], keywords:["ByCS","mebis","Lernplattform","BayernCloud"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1544256718-3bcf237f3974?w=400&h=225&fit=crop" },
+  { id:"S-122", title:"ByCS Videonetzwerk im Unterricht", description:"Videos hochladen, teilen und didaktisch einsetzen.", dataType:"VIDEO_MP4", duration:"09:30", license:{name:"CC BY"}, eafCode:["460"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule"], keywords:["ByCS","Videonetzwerk","BayernCloud","Video","mebis"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1492619375914-88005aa9e8fb?w=400&h=225&fit=crop" },
+
+  // ═══ FOKUS: Lehrkräftegesundheit ═══
+  { id:"S-130", title:"Resilienz im Lehrberuf", description:"Strategien zur Stärkung der psychischen Widerstandskraft.", dataType:"VIDEO_MP4", duration:"20:00", license:{name:"CC BY-SA"}, eafCode:["200"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule","Grundschule","Berufsschule"], keywords:["Gesundheit","Resilienz","Belastung","Stressprävention"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&h=225&fit=crop" },
+  { id:"S-131", title:"Stimmtraining für Lehrkräfte", description:"Die Stimme schonen und gezielt einsetzen. Praktische Übungen.", dataType:"AUDIO_MPEG", duration:"25:00", license:{name:"CC BY"}, eafCode:["200"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule","Grundschule","Berufsschule"], keywords:["Gesundheit","Stimme","Belastung","Prävention"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&h=225&fit=crop" },
+  { id:"S-132", title:"Kollegiale Fallberatung – Methode", description:"Strukturierte Problemlösung im Team. Anleitung und Materialien.", dataType:"APPLICATION_PDF", license:{name:"CC BY-SA"}, eafCode:["200"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule","Grundschule","Berufsschule"], keywords:["Gesundheit","Coaching","Fallberatung","Belastung","Resilienz"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=225&fit=crop" },
+  { id:"S-133", title:"Burnout-Prävention an Schulen", description:"Warnsignale erkennen, Grenzen setzen, Hilfe finden.", dataType:"VIDEO_MP4", duration:"16:15", license:{name:"CC BY"}, eafCode:["200"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule","Grundschule","Berufsschule"], keywords:["Gesundheit","Burnout","Stressprävention","Belastung","Resilienz"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&h=225&fit=crop" },
+
+  // ═══ FOKUS: Schulleitung & Führung ═══
+  { id:"S-140", title:"Digital Leadership für Schulleitungen", description:"Die digitale Transformation als Führungsaufgabe gestalten.", dataType:"VIDEO_MP4", duration:"22:30", license:{name:"CC BY-SA"}, eafCode:["460"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule","Grundschule","Berufsschule"], keywords:["Führung","Schulleitung","Leadership","digital","Schulentwicklung"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=225&fit=crop" },
+  { id:"S-141", title:"Personalgespräche professionell führen", description:"Gesprächstechniken, Feedbackregeln und schwierige Situationen.", dataType:"APPLICATION_PDF", license:{name:"CC BY"}, eafCode:["200"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule","Grundschule","Berufsschule"], keywords:["Führung","Personalführung","Schulleitung","Feedback","Gespräch"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=225&fit=crop" },
+  { id:"S-142", title:"Schulentwicklung datenbasiert steuern", description:"Evaluation, Zielvereinbarungen und QM-Prozesse.", dataType:"VIDEO_MP4", duration:"18:00", license:{name:"CC BY-SA"}, eafCode:["200"], schoolTypes:["Gymnasium","Realschule","Mittel- / Hauptschule","Grundschule"], keywords:["Führung","Schulentwicklung","Schulleitung","Qualität","Evaluation"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&h=225&fit=crop" },
+
+  // ═══ FOKUS: Ganztag ═══
+  { id:"S-150", title:"Ganztagsangebote pädagogisch gestalten", description:"Qualitätsmerkmale guter Ganztagsbildung und Praxisbeispiele.", dataType:"VIDEO_MP4", duration:"14:50", license:{name:"CC BY-SA"}, eafCode:["200"], schoolTypes:["Grundschule","Mittel- / Hauptschule","Realschule"], keywords:["Ganztag","Ganztagsschule","Qualität","Pädagogik"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=225&fit=crop" },
+  { id:"S-151", title:"Rhythmisierung im Ganztag", description:"Lern- und Erholungsphasen sinnvoll über den Tag verteilen.", dataType:"APPLICATION_PDF", license:{name:"CC BY"}, eafCode:["200"], schoolTypes:["Grundschule","Mittel- / Hauptschule"], keywords:["Ganztag","Ganztagsschule","Rhythmisierung","Nachmittagsbetreuung"], source:"ALP Dillingen", thumb:"https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=225&fit=crop" },
+
+];
+
+
+
+// ═══ STATE ═══
+let state = {
+  mode: 'search',
+  query: '',
+  browseLabel: '',
+  browseEafCodes: [],
+  browseKeywords: [],
+  filters: { thema:[], typ:[], schulart:[], lizenz:[] },
+};
+
+// ═══ FILTER LOGIC ═══
+function getBaseSet() {
+  if (state.mode === 'browse-topic')
+    return MEDIA.filter(m => m.eafCode.some(c => state.browseEafCodes.includes(c)));
+  if (state.mode === 'browse-schwerpunkt')
+    return MEDIA.filter(m => {
+      const hay = [m.title, m.description, ...m.keywords].join(' ').toLowerCase();
+      return state.browseKeywords.some(kw => hay.includes(kw.toLowerCase()));
+    });
+  if (state.mode === 'search' && state.query) {
+    const q = state.query.toLowerCase();
+    return MEDIA.filter(m =>
+      m.title.toLowerCase().includes(q) ||
+      m.description.toLowerCase().includes(q) ||
+      m.keywords.some(k => k.toLowerCase().includes(q))
+    );
+  }
+  return [];
+}
+
+function applyFilters(items) {
+  const f = state.filters;
+  return items.filter(m => {
+    if (f.thema.length && !f.thema.some(c => m.eafCode.includes(c))) return false;
+    if (f.typ.length && !f.typ.includes(m.dataType)) return false;
+    if (f.schulart.length && !f.schulart.some(s => m.schoolTypes.includes(s))) return false;
+    if (f.lizenz.length && !f.lizenz.includes(m.license.name)) return false;
+    return true;
+  });
+}
+
+function resetFilters() { state.filters = {thema:[],typ:[],schulart:[],lizenz:[]}; }
+function hasAnyFilter() { return Object.values(state.filters).some(a => a.length > 0); }
+
+// ═══ DYNAMIC THEMA MENU ═══
+// In search mode: show all Fächer
+// In browse-topic mode: show only Fächer of that topic group
+// In browse-schwerpunkt mode: show all Fächer
+function getThemaOptions() {
+  if (state.mode === 'browse-topic') {
+    // Only show Fächer within this topic group
+    return ALLE_FAECHER.filter(f => state.browseEafCodes.includes(f.eafCode));
+  }
+  return ALLE_FAECHER;
+}
+
+function buildThemaMenu() {
+  const menu = document.getElementById('menu-thema');
+  const opts = getThemaOptions();
+  menu.innerHTML = opts.map(o => `
+    <div class="fmi" data-key="thema" data-value="${o.eafCode}">
+      <span class="ck"></span>${o.name}
+    </div>
+  `).join('');
+  menu.querySelectorAll('.fmi').forEach(item => {
+    item.addEventListener('click', () => toggleFilterValue(item.dataset.key, item.dataset.value));
+  });
+}
+
+function buildStaticMenus() {
+  for (const [key, def] of Object.entries(STATIC_FILTERS)) {
+    const menu = document.getElementById('menu-'+key);
+    menu.innerHTML = def.options.map(o => `
+      <div class="fmi" data-key="${key}" data-value="${o.value}">
+        <span class="ck"></span>${o.label}
+      </div>
+    `).join('');
+    menu.querySelectorAll('.fmi').forEach(item => {
+      item.addEventListener('click', () => toggleFilterValue(item.dataset.key, item.dataset.value));
+    });
+  }
+}
+
+// ═══ FILTER UI ═══
+function toggleMenu(key) {
+  const menu = document.getElementById('menu-'+key);
+  const wasOpen = menu.classList.contains('open');
+  closeAllMenus();
+  if (!wasOpen) menu.classList.add('open');
+}
+function closeAllMenus() { document.querySelectorAll('.filter-menu').forEach(m => m.classList.remove('open')); }
+document.addEventListener('click', e => { if (!e.target.closest('.filter-dropdown')) closeAllMenus(); });
+
+function toggleFilterValue(key, value) {
+  const arr = state.filters[key]; const idx = arr.indexOf(value);
+  if (idx >= 0) arr.splice(idx,1); else arr.push(value);
+  render();
+}
+function removeFilterValue(key, value) {
+  state.filters[key] = state.filters[key].filter(v => v !== value); render();
+}
+function clearAllFilters() { resetFilters(); render(); }
+
+function renderFilterUI() {
+  // Rebuild thema menu (dynamic per mode)
+  buildThemaMenu();
+
+  // Hide thema dropdown if browse-topic has only 1 Fach
+  const themaOpts = getThemaOptions();
+  document.getElementById('fd-thema').classList.toggle('hidden-filter',
+    state.mode !== 'search' && state.mode !== 'browse-topic' || (state.mode === 'browse-topic' && themaOpts.length <= 1));
+
+  // Update all menu item states
+  document.querySelectorAll('.fmi').forEach(item => {
+    const sel = state.filters[item.dataset.key]?.includes(item.dataset.value);
+    item.classList.toggle('sel', sel);
+    item.querySelector('.ck').textContent = sel ? '✓' : '';
+  });
+
+  // Button states
+  const allKeys = ['thema','typ','schulart','lizenz'];
+  const labels = {thema:'Themenbereich',typ:'Medientyp',schulart:'Schulart',lizenz:'Lizenz'};
+  for (const key of allKeys) {
+    const btn = document.querySelector(`#fd-${key} .filter-btn`);
+    if (!btn) continue;
+    const count = state.filters[key].length;
+    btn.classList.toggle('has-active', count > 0);
+    btn.innerHTML = count > 0
+      ? `${labels[key]} <span class="count-badge">${count}</span> <span class="arrow">▾</span>`
+      : `${labels[key]} <span class="arrow">▾</span>`;
+  }
+
+  // Chips
+  const chips = document.getElementById('filterChips');
+  const all = [];
+  for (const [key, values] of Object.entries(state.filters)) {
+    for (const v of values) {
+      let label = v;
+      if (key === 'thema') label = ALLE_FAECHER.find(f=>f.eafCode===v)?.name || v;
+      else if (key === 'typ') label = TYPE_LABELS[v] || v;
+      else if (key === 'schulart' && v === 'Mittel- / Hauptschule') label = 'Mittelschule';
+      else if (key === 'schulart' && v === 'Fachoberschule') label = 'FOS/BOS';
+      all.push(`<div class="filter-chip">${label}<span class="remove" onclick="removeFilterValue('${key}','${v.replace(/'/g,"\\'")}')">×</span></div>`);
+    }
+  }
+  if (all.length > 1) all.push(`<button class="clear-all" onclick="clearAllFilters()">Alle entfernen</button>`);
+  chips.innerHTML = all.join('');
+}
+
+// ═══ RENDER ═══
+function renderCards(items, gridId) {
+  const grid = document.getElementById(gridId);
+  if (!items.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div><h3>Keine Medien gefunden</h3><p>Passen Sie Suchbegriffe oder Filter an.</p></div>`;
+    return;
+  }
+  grid.innerHTML = items.map(m => `
+    <div class="media-card" onclick="openDetail('${m.id}')">
+      <div class="card-thumb">
+        <img src="${m.thumb}" alt="" loading="lazy" onerror="this.style.display='none'">
+        <span class="card-badge">${TYPE_ICONS[m.dataType]||''} ${TYPE_LABELS[m.dataType]||m.dataType}</span>
+        ${m.duration?`<span class="card-duration">${m.duration}</span>`:''}
+      </div>
+      <div class="card-body">
+        <div class="card-title">${m.title}</div>
+        <div class="card-desc">${m.description}</div>
+        <div class="card-meta">
+          <span>${m.source}</span>
+          <span class="license-badge">${m.license.name}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderBrowse() {
+  document.getElementById('topicGrid').innerHTML = THEMEN.map(t => `
+    <div class="topic-card" onclick="openTopic('${t.id}')">
+      <div class="topic-name">${t.name}</div>
+    </div>
+  `).join('');
+  document.getElementById('schwerpunktGrid').innerHTML = SCHWERPUNKTE.map(s => `
+    <div class="schwerpunkt-card" onclick="openSchwerpunkt('${s.id}')">
+      <div class="schwerpunkt-label">${s.label}</div>
+    </div>
+  `).join('');
+  document.getElementById('fokusGrid').innerHTML = FOKUS.map(s => `
+    <div class="schwerpunkt-card" onclick="openFokus('${s.id}')">
+      <div class="schwerpunkt-label">${s.label}</div>
+    </div>
+  `).join('');
+}
+
+function render() {
+  const els = {
+    hero: document.getElementById('searchHero'),
+    browseHero: document.getElementById('browseHero'),
+    filter: document.getElementById('filterArea'),
+    browse: document.getElementById('browseSection'),
+    browseRes: document.getElementById('browseResults'),
+    search: document.getElementById('searchSection'),
+  };
+  Object.values(els).forEach(e => e.classList.add('hidden'));
+
+  document.getElementById('tabSearch').classList.toggle('active', state.mode === 'search');
+  document.getElementById('tabBrowse').classList.toggle('active', state.mode !== 'search');
+
+  document.body.style.background = (state.mode === 'search' && state.query) || state.mode === 'browse-topic' || state.mode === 'browse-schwerpunkt' ? 'var(--hintergrund)' : 'var(--weiss)';
+  if (state.mode === 'search') {
+    els.hero.classList.remove('hidden');
+    els.hero.classList.toggle('compact', !!state.query);
+    if (state.query) {
+      els.filter.classList.remove('hidden');
+      els.search.classList.remove('hidden');
+      const base = getBaseSet(), filtered = applyFilters(base);
+      renderCards(filtered, 'searchGrid');
+      document.getElementById('searchContext').innerHTML = `Ergebnisse für <strong>„${state.query}“</strong>`;
+      document.getElementById('resultCount').textContent = hasAnyFilter() ? `${filtered.length} von ${base.length}` : `${filtered.length} Medien`;
+    }
+  } else if (state.mode === 'browse') {
+    els.browseHero.classList.remove('hidden');
+    els.browseHero.classList.remove('compact');
+    els.browse.classList.remove('hidden');
+  } else if (state.mode === 'browse-topic' || state.mode === 'browse-schwerpunkt') {
+    els.browseHero.classList.remove('hidden');
+    els.browseHero.classList.add('compact');
+    els.filter.classList.remove('hidden');
+    els.browseRes.classList.remove('hidden');
+    document.getElementById('crumbLabel').textContent = state.browseLabel;
+    const base = getBaseSet(), filtered = applyFilters(base);
+    renderCards(filtered, 'browseGrid');
+    document.getElementById('resultCount').textContent = hasAnyFilter() ? `${filtered.length} von ${base.length}` : `${filtered.length} Medien`;
+  }
+  renderFilterUI();
+}
+
+// ═══ NAVIGATION ═══
+function switchTab(tab) {
+  if (tab === 'search') {
+    state.mode = 'search'; state.browseEafCodes = []; state.browseKeywords = []; state.browseLabel = '';
+    resetFilters(); render(); document.getElementById('searchInput').focus();
+  } else {
+    state.mode = 'browse'; state.query = ''; state.browseEafCodes = []; state.browseKeywords = [];
+    resetFilters();
+    document.getElementById('searchInput').value = '';
+    document.getElementById('searchClear').classList.remove('visible');
+    render();
+  }
+}
+function goHome() { switchTab('search'); }
+
+function openTopic(id) {
+  const t = THEMEN.find(x => x.id === id);
+  state.mode = 'browse-topic'; state.browseLabel = t.name; state.browseEafCodes = t.eafCodes;
+  state.browseKeywords = []; resetFilters(); render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function openSchwerpunkt(id) {
+  const s = SCHWERPUNKTE.find(x => x.id === id);
+  state.mode = 'browse-schwerpunkt'; state.browseLabel = s.label; state.browseKeywords = s.keywords;
+  state.browseEafCodes = []; resetFilters(); render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function openFokus(id) {
+  const s = FOKUS.find(x => x.id === id);
+  state.mode = 'browse-schwerpunkt'; state.browseLabel = s.label; state.browseKeywords = s.keywords;
+  state.browseEafCodes = []; resetFilters(); render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClear').classList.remove('visible');
+  resetFilters(); state.query = ''; render();
+}
+
+let searchTimer;
+document.getElementById('searchInput').addEventListener('input', e => {
+  const q = e.target.value.trim();
+  document.getElementById('searchClear').classList.toggle('visible', q.length > 0);
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { if (!q) resetFilters(); state.query = q; render(); }, 200);
+});
+
+// ═══ DETAIL ═══
+function openDetail(id) {
+  const m = MEDIA.find(x => x.id === id); if (!m) return;
+  document.getElementById('detailTitle').textContent = m.title;
+  document.getElementById('detailDesc').textContent = m.description;
+  const t = TYPE_LABELS[m.dataType] || m.dataType;
+  document.getElementById('detailSource').textContent = m.source + ' · ' + t + (m.duration ? ' · ' + m.duration : '');
+  const fachNames = m.eafCode.map(c => ALLE_FAECHER.find(f=>f.eafCode===c)?.name||c);
+  document.getElementById('detailTags').innerHTML = [
+    ...fachNames.map(n=>`<span class="detail-tag">${n}</span>`),
+    ...m.schoolTypes.map(s=>`<span class="detail-tag">${s}</span>`),
+    `<span class="detail-tag">${t}</span>`,
+    `<span class="detail-tag license">${m.license.name}</span>`,
+  ].join('');
+  document.getElementById('detailOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeDetail() { document.getElementById('detailOverlay').classList.remove('open'); document.body.style.overflow = ''; }
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeDetail(); });
+
+// ═══ INIT ═══
+buildStaticMenus(); renderBrowse(); render();
+</script>
+</body>
+</html>
